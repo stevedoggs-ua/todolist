@@ -98,7 +98,7 @@ export default function TodayPage() {
 
       {tasks !== null && total > 0 && (
         <div className="mb-5">
-          <MaxScore today={today} todayPct={Math.round((doneTotal / total) * 100)} hasTasks />
+          <MaxScore today={today} done={doneTotal} total={total} />
         </div>
       )}
 
