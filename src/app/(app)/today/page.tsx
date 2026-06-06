@@ -1,14 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { listToday, setDone, updateTask, countFocus } from "@/lib/db/tasks";
+import { listToday, setDone, updateTask, deleteTask, countFocus } from "@/lib/db/tasks";
 import { TaskCard } from "@/components/TaskCard";
 import { Checkbox } from "@/components/Checkbox";
 import { Skeleton } from "@/components/Skeleton";
 import { Toast } from "@/components/Toast";
-import { IconStar, IconStarFilled, IconSparkles, IconPlus } from "@/components/icons";
+import { Timeline } from "@/components/Timeline";
+import { TaskSheet } from "@/components/TaskSheet";
+import { IconStar, IconStarFilled, IconSparkles, IconPlus, IconClock } from "@/components/icons";
 import { track } from "@/lib/analytics";
-import { todayHeadline } from "@/lib/format";
+import { todayHeadline, durationLabel, sumDuration } from "@/lib/format";
 import type { Task } from "@/lib/types";
 
 function todayIso() { return new Date().toISOString().slice(0, 10); }
@@ -18,14 +20,18 @@ export default function TodayPage() {
   const today = todayIso();
   const [tasks, setTasks] = useState<Task[] | null>(null);
   const [toast, setToast] = useState("");
+  const [editing, setEditing] = useState<Task | null>(null);
+  const [view, setView] = useState<"list" | "timeline">("list");
   const load = () => listToday(today).then(setTasks).catch(() => setTasks([]));
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const focus = (tasks ?? []).filter((t) => t.is_focus && t.focus_date === today);
-  const rest = (tasks ?? []).filter((t) => !(t.is_focus && t.focus_date === today));
+  const all = tasks ?? [];
+  const focus = all.filter((t) => t.is_focus && t.focus_date === today);
+  const rest = all.filter((t) => !(t.is_focus && t.focus_date === today));
   const focusDone = focus.filter((t) => t.is_done).length;
-  const total = (tasks ?? []).length;
-  const doneTotal = (tasks ?? []).filter((t) => t.is_done).length;
+  const total = all.length;
+  const doneTotal = all.filter((t) => t.is_done).length;
+  const plannedMin = sumDuration(all.map((t) => t.duration_min));
 
   const toggle = async (t: Task) => {
     const done = !t.is_done;
@@ -47,9 +53,21 @@ export default function TodayPage() {
     }
   };
 
+  const saveEdit = async (patch: Partial<Task>) => {
+    if (!editing) return;
+    await updateTask(editing.id, patch);
+    await load();
+  };
+  const removeEdit = async () => {
+    if (!editing) return;
+    await deleteTask(editing.id);
+    setEditing(null);
+    await load();
+  };
+
   const Row = (t: Task, i: number) => (
     <div key={t.id} className="rise" style={{ animationDelay: `${i * 45}ms` }}>
-      <TaskCard task={t} today={today} focus={t.is_focus && t.focus_date === today}
+      <TaskCard task={t} today={today} focus={t.is_focus && t.focus_date === today} onOpen={() => setEditing(t)}
         leading={<Checkbox checked={t.is_done} onChange={() => toggle(t)} label={`Виконати: ${t.title}`} />}
         trailing={
           <button onClick={() => toggleFocus(t)} aria-label={t.is_focus ? "Прибрати з фокусу" : "У фокус"}
@@ -63,14 +81,16 @@ export default function TodayPage() {
 
   return (
     <main className="pt-12">
-      <header className="mb-6">
+      <header className="mb-5">
         <h1 className="text-[30px] font-semibold tracking-tight leading-none">Сьогодні</h1>
         <p className="mt-1.5 text-[15px]" style={{ color: "var(--ink-3)" }}>{todayHeadline(today)}</p>
         {tasks !== null && total > 0 && (
           <div className="mt-4">
-            <div className="flex justify-between text-[13px] mb-1.5" style={{ color: "var(--ink-2)" }}>
+            <div className="flex justify-between items-center text-[13px] mb-1.5" style={{ color: "var(--ink-2)" }}>
               <span>{doneTotal} з {total} зроблено</span>
-              <span>{Math.round((doneTotal / total) * 100)}%</span>
+              {plannedMin > 0 && (
+                <span className="inline-flex items-center gap-1"><IconClock size={13} /> ≈ {durationLabel(plannedMin)} на день</span>
+              )}
             </div>
             <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--surface-2)" }}>
               <div className="h-full rounded-full transition-all duration-500"
@@ -80,13 +100,28 @@ export default function TodayPage() {
         )}
       </header>
 
+      {tasks !== null && total > 0 && (
+        <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl mb-5" style={{ background: "var(--surface-2)" }}>
+          {(["list", "timeline"] as const).map((v) => (
+            <button key={v} onClick={() => setView(v)}
+              className="h-9 rounded-xl text-[14px] font-medium transition-colors press"
+              style={{ background: view === v ? "var(--surface)" : "transparent",
+                color: view === v ? "var(--ink)" : "var(--ink-3)",
+                boxShadow: view === v ? "var(--shadow-card)" : "none" }}>
+              {v === "list" ? "Список" : "Таймлайн"}
+            </button>
+          ))}
+        </div>
+      )}
+
       {tasks === null ? (
         <div>{[0, 1, 2].map((i) => <Skeleton key={i} />)}</div>
       ) : total === 0 ? (
         <EmptyToday />
+      ) : view === "timeline" ? (
+        <Timeline tasks={all} today={today} onOpen={(t) => setEditing(t)} onToggle={toggle} />
       ) : (
         <>
-          {/* Focus */}
           <section className="mb-7">
             <div className="flex items-center justify-between mb-3">
               <h2 className="flex items-center gap-2 text-[17px] font-semibold">
@@ -117,7 +152,6 @@ export default function TodayPage() {
             )}
           </section>
 
-          {/* Rest */}
           {rest.length > 0 && (
             <section>
               <h2 className="text-[17px] font-semibold mb-3">Решта</h2>
@@ -128,6 +162,10 @@ export default function TodayPage() {
       )}
 
       {toast && <Toast message={toast} action="Ок" onAction={() => setToast("")} />}
+      {editing && (
+        <TaskSheet task={editing} today={today}
+          onClose={() => setEditing(null)} onSave={saveEdit} onDelete={removeEdit} />
+      )}
     </main>
   );
 }

@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { listUpcoming } from "@/lib/db/tasks";
+import { listUpcoming, updateTask, deleteTask } from "@/lib/db/tasks";
 import { TaskCard } from "@/components/TaskCard";
 import { Skeleton } from "@/components/Skeleton";
-import { IconCalendar, IconPlus } from "@/components/icons";
-import { groupLabel } from "@/lib/format";
+import { TaskSheet } from "@/components/TaskSheet";
+import { IconCalendar, IconPlus, IconClock } from "@/components/icons";
+import { groupLabel, durationLabel, sumDuration } from "@/lib/format";
 import type { Task } from "@/lib/types";
 
 function todayIso() { return new Date().toISOString().slice(0, 10); }
@@ -13,12 +14,26 @@ function todayIso() { return new Date().toISOString().slice(0, 10); }
 export default function UpcomingPage() {
   const today = todayIso();
   const [tasks, setTasks] = useState<Task[] | null>(null);
-  useEffect(() => { listUpcoming(today).then(setTasks).catch(() => setTasks([])); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const [editing, setEditing] = useState<Task | null>(null);
+  const load = () => listUpcoming(today).then(setTasks).catch(() => setTasks([]));
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const groups = (tasks ?? []).reduce<Record<string, Task[]>>((acc, t) => {
     const k = t.due_date ?? "—"; (acc[k] ||= []).push(t); return acc;
   }, {});
   const dates = Object.keys(groups).sort();
+
+  const saveEdit = async (patch: Partial<Task>) => {
+    if (!editing) return;
+    await updateTask(editing.id, patch);
+    await load();
+  };
+  const removeEdit = async () => {
+    if (!editing) return;
+    await deleteTask(editing.id);
+    setEditing(null);
+    await load();
+  };
 
   return (
     <main className="pt-12">
@@ -33,22 +48,37 @@ export default function UpcomingPage() {
         <EmptyUpcoming />
       ) : (
         <div className="flex flex-col gap-7">
-          {dates.map((date) => (
-            <section key={date}>
-              <h2 className="flex items-baseline gap-2 mb-3">
-                <span className="text-[17px] font-semibold">{groupLabel(date, today)}</span>
-                <span className="text-[13px]" style={{ color: "var(--ink-3)" }}>{groups[date].length}</span>
-              </h2>
-              <div className="flex flex-col gap-2.5">
-                {groups[date].map((t, i) => (
-                  <div key={t.id} className="rise" style={{ animationDelay: `${i * 45}ms` }}>
-                    <TaskCard task={t} today={today} />
-                  </div>
-                ))}
-              </div>
-            </section>
-          ))}
+          {dates.map((date) => {
+            const mins = sumDuration(groups[date].map((t) => t.duration_min));
+            return (
+              <section key={date}>
+                <div className="flex items-baseline justify-between mb-3">
+                  <h2 className="flex items-baseline gap-2">
+                    <span className="text-[17px] font-semibold">{groupLabel(date, today)}</span>
+                    <span className="text-[13px]" style={{ color: "var(--ink-3)" }}>{groups[date].length}</span>
+                  </h2>
+                  {mins > 0 && (
+                    <span className="inline-flex items-center gap-1 text-[13px]" style={{ color: "var(--ink-3)" }}>
+                      <IconClock size={13} /> ≈ {durationLabel(mins)}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2.5">
+                  {groups[date].map((t, i) => (
+                    <div key={t.id} className="rise" style={{ animationDelay: `${i * 45}ms` }}>
+                      <TaskCard task={t} today={today} onOpen={() => setEditing(t)} />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
         </div>
+      )}
+
+      {editing && (
+        <TaskSheet task={editing} today={today}
+          onClose={() => setEditing(null)} onSave={saveEdit} onDelete={removeEdit} />
       )}
     </main>
   );

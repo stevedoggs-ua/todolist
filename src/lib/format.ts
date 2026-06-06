@@ -55,3 +55,30 @@ export function durationLabel(min: number): string {
   const m = min % 60;
   return m ? `${h} год ${m} хв` : `${h} год`;
 }
+
+/** Add minutes to a "HH:MM" time, returning "HH:MM" (clamped to same day). */
+export function addMinutes(time: string, min: number): string {
+  const [h, m] = time.split(":").map(Number);
+  let total = h * 60 + m + min;
+  if (total >= 24 * 60) total = 24 * 60 - 1;
+  const hh = Math.floor(total / 60);
+  const mm = total % 60;
+  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+}
+
+/** "09:30 – 10:30" from a start time and a duration (defaults to 30 min). */
+export function timeRange(start: string, durationMin: number | null): string {
+  return `${start} – ${addMinutes(start, durationMin ?? 30)}`;
+}
+
+/** Minutes between two "HH:MM" times (b - a). */
+export function minutesBetween(a: string, b: string): number {
+  const [ah, am] = a.split(":").map(Number);
+  const [bh, bm] = b.split(":").map(Number);
+  return bh * 60 + bm - (ah * 60 + am);
+}
+
+/** Total planned minutes across tasks that have a duration. */
+export function sumDuration(durations: (number | null)[]): number {
+  return durations.reduce<number>((acc, d) => acc + (d ?? 0), 0);
+}

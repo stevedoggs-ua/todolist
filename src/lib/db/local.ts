@@ -4,9 +4,9 @@
 // tasks.ts / projects.ts (and re-enable the proxy auth guard).
 import type { Task, Project } from "@/lib/types";
 
-const TASKS_KEY = "demo_tasks_v1";
-const PROJECTS_KEY = "demo_projects_v1";
-const SEEDED_KEY = "demo_seeded_v1";
+const TASKS_KEY = "demo_tasks_v2";
+const PROJECTS_KEY = "demo_projects_v2";
+const SEEDED_KEY = "demo_seeded_v2";
 
 const INBOX_ID = "00000000-0000-0000-0000-000000000001";
 const USER = "demo-user";
@@ -56,12 +56,20 @@ function seedIfNeeded(): void {
   ];
 
   const tasks: Task[] = [
-    task({ title: "Подзвонити стоматологу", priority: 2, duration_min: 15, due_date: iso(0) }),
-    task({ title: "Купити продукти на вечерю", priority: 3, duration_min: 30, due_date: iso(0) }),
+    // Today — time-blocked (timeline)
+    task({ title: "Глибока робота: презентація", priority: 1, due_date: iso(0), due_time: "09:30", duration_min: 90 }),
+    task({ title: "Дзвінок з клієнтом", priority: 2, due_date: iso(0), due_time: "11:00", duration_min: 30 }),
+    task({ title: "Обід", priority: 4, due_date: iso(0), due_time: "12:30", duration_min: 60 }),
+    task({ title: "Розбір кандидатів", priority: 2, due_date: iso(0), due_time: "14:00", duration_min: 60 }),
+    task({ title: "Відповісти на листи", priority: 3, due_date: iso(0), due_time: "15:30", duration_min: 30 }),
+    // Today — not scheduled yet (no time)
+    task({ title: "Подзвонити стоматологу", priority: 2, due_date: iso(0), duration_min: 15 }),
+    // Inbox — no date
     task({ title: "Відповісти Анні про дедлайн", priority: 1, duration_min: 10 }),
     task({ title: "Прочитати статтю про есенціалізм", priority: 4 }),
+    // Upcoming
     task({ title: "Зустріч з командою", priority: 2, due_date: iso(1), due_time: "14:00", duration_min: 45 }),
-    task({ title: "Підготувати презентацію для клієнта", priority: 1, due_date: iso(3), duration_min: 90 }),
+    task({ title: "Підготувати квартальний звіт", priority: 1, due_date: iso(3), duration_min: 120 }),
   ];
 
   writeRaw(PROJECTS_KEY, projects);
