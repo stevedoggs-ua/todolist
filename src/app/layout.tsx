@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Day Planner",
-  description: "Вивали все з голови — AI розкладе на задачі з пріоритетом, часом і датою.",
+  title: "Max Plan",
+  description: "Вивали все з голови — Max Plan розкладе на задачі з пріоритетом, часом і датою.",
 };
 
 export const viewport: Viewport = {

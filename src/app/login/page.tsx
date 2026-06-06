@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { IconSparkles, IconArrowRight } from "@/components/icons";
+import { IconArrowRight } from "@/components/icons";
+import { Logo } from "@/components/Logo";
 
 type Status = "idle" | "sending" | "sent" | "error";
 
@@ -47,10 +48,7 @@ export default function LoginPage() {
 
       <div className="relative w-full max-w-sm mx-auto flex flex-col gap-8">
         <div className="flex flex-col items-center text-center gap-5">
-          <div className="w-16 h-16 rounded-3xl flex items-center justify-center"
-            style={{ background: "var(--accent-weak)", color: "var(--accent)" }}>
-            <IconSparkles size={32} />
-          </div>
+          <Logo size={44} />
           <div className="flex flex-col gap-2.5">
             <h1 className="text-[28px] leading-[1.1] font-semibold tracking-tight">Вивали все з голови</h1>
             <p className="text-[16px] leading-relaxed" style={{ color: "var(--ink-2)" }}>

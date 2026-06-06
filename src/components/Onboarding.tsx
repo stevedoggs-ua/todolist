@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { track } from "@/lib/analytics";
 import { IconMic, IconSparkles, IconStarFilled, IconArrowRight } from "./icons";
+import { Logo } from "./Logo";
 
 const SLIDES = [
   { Icon: IconMic, t: "Вивали все з голови", s: "Голосом або текстом — усе, що крутиться в думках. Без форм і полів." },
@@ -21,6 +22,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col p-6 pt-[max(env(safe-area-inset-top),24px)]"
       style={{ background: "var(--bg)" }}>
+      <Logo size={26} className="mx-auto mb-6" />
       {/* progress + skip */}
       <div className="flex items-center gap-3">
         <div className="flex gap-1.5 flex-1">
