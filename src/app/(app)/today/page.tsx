@@ -8,6 +8,7 @@ import { Timeline } from "@/components/Timeline";
 import { TaskSheet } from "@/components/TaskSheet";
 import { FocusBoard } from "@/components/FocusBoard";
 import { MotivationBanner } from "@/components/MotivationBanner";
+import { MaxScore } from "@/components/MaxScore";
 import { IconSparkles, IconPlus, IconClock } from "@/components/icons";
 import { track } from "@/lib/analytics";
 import { todayHeadline, durationLabel, sumDuration } from "@/lib/format";
@@ -94,6 +95,12 @@ export default function TodayPage() {
           </div>
         )}
       </header>
+
+      {tasks !== null && total > 0 && (
+        <div className="mb-5">
+          <MaxScore today={today} todayPct={Math.round((doneTotal / total) * 100)} hasTasks />
+        </div>
+      )}
 
       {tasks !== null && total > 0 && (
         <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl mb-5" style={{ background: "var(--surface-2)" }}>
