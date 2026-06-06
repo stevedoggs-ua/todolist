@@ -1,26 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --bg: #ffffff; --surface: #f7f7f5; --surface-2: #efeeea;
+  --text-primary: #1c1c1c; --text-secondary: #5c5c5c; --text-tertiary: #9a9a9a;
+  --accent: #e8542a;
+  --p1: #d8412f; --p2: #e8842a; --p3: #2a6fe8; --p4: #9a9a9a;
+  --success: #2e9e5b; --danger: #d8412f; --warning: #e8a42a;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #1a1a18; --surface: #232320; --surface-2: #2d2d29;
+    --text-primary: #f2f2ef; --text-secondary: #b5b5b0; --text-tertiary: #7a7a76;
+    color-scheme: dark;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+html, body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
 }
