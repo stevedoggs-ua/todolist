@@ -38,6 +38,7 @@ function task(partial: Partial<Task> & Pick<Task, "title" | "priority">): Task {
     is_done: false,
     is_focus: false,
     focus_date: null,
+    sort_order: null,
     recurrence: null,
     source: "manual",
     created_at: new Date().toISOString(),
@@ -71,6 +72,8 @@ function seedIfNeeded(): void {
     task({ title: "Зустріч з командою", priority: 2, due_date: iso(1), due_time: "14:00", duration_min: 45 }),
     task({ title: "Підготувати квартальний звіт", priority: 1, due_date: iso(3), duration_min: 120 }),
   ];
+
+  tasks.forEach((t, i) => { t.sort_order = i; });
 
   writeRaw(PROJECTS_KEY, projects);
   writeRaw(TASKS_KEY, tasks);

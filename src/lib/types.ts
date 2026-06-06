@@ -13,6 +13,7 @@ export interface Task {
   is_done: boolean;
   is_focus: boolean;
   focus_date: string | null; // ISO yyyy-mm-dd
+  sort_order: number | null; // manual ordering within a list
   recurrence: string | null;
   source: TaskSource;
   created_at: string;
