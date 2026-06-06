@@ -2,21 +2,21 @@
 import { useEffect, useState } from "react";
 import { BottomNav } from "@/components/BottomNav";
 import { Onboarding } from "@/components/Onboarding";
-import { createClient } from "@/lib/supabase/client";
+
+const ONBOARDING_KEY = "demo_onboarding_done_v1";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
   useEffect(() => {
-    const sb = createClient();
-    sb.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { setShowOnboarding(false); return; }
-      const { data } = await sb.from("profiles").select("onboarding_done").eq("id", user.id).maybeSingle();
-      setShowOnboarding(!(data?.onboarding_done));
-    });
+    setShowOnboarding(!window.localStorage.getItem(ONBOARDING_KEY));
   }, []);
+  const dismiss = () => {
+    window.localStorage.setItem(ONBOARDING_KEY, "1");
+    setShowOnboarding(false);
+  };
   return (
     <div className="min-h-screen pb-20">
-      {showOnboarding && <Onboarding onDone={() => setShowOnboarding(false)} />}
+      {showOnboarding && <Onboarding onDone={dismiss} />}
       <div className="max-w-md mx-auto px-4">{children}</div>
       <BottomNav />
     </div>

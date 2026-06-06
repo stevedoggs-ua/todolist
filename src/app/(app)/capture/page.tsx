@@ -2,11 +2,22 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { insertTasks } from "@/lib/db/tasks";
+import type { Priority } from "@/lib/types";
 import { track } from "@/lib/analytics";
 import { useSpeech, isSpeechSupported } from "@/lib/voice/useSpeech";
 import { MicButton } from "@/components/MicButton";
 
 function todayIso() { return new Date().toISOString().slice(0, 10); }
+
+// Demo fallback when the AI route isn't available (no auth / no API key):
+// split a brain-dump into atomic tasks by lines and separators.
+function localSplit(text: string) {
+  return text
+    .split(/[\n,;]+|\s+(?:і|та)\s+/i)
+    .map((s) => s.trim())
+    .filter((s) => s.length >= 2)
+    .map((title) => ({ title, priority: 4 as const }));
+}
 
 export default function CapturePage() {
   const router = useRouter();
@@ -23,12 +34,20 @@ export default function CapturePage() {
     setLoading(true); setError("");
     track("capture_started", { source });
     try {
-      const res = await fetch("/api/parse", { method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, today: todayIso(), source }) });
-      const data = await res.json();
-      await insertTasks((data.tasks ?? []).map((t: any) => ({ ...t, source })));
-      track(data.ok ? "parse_succeeded" : "parse_failed", { count: data.tasks?.length ?? 0 });
+      let tasks: { title: string; priority: Priority; duration_min?: number | null; due_date?: string | null; due_time?: string | null }[] | null = null;
+      try {
+        const res = await fetch("/api/parse", { method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, today: todayIso(), source }) });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.tasks) && data.tasks.length) tasks = data.tasks;
+        }
+      } catch { /* fall through to local split */ }
+
+      if (!tasks) tasks = localSplit(text);
+      await insertTasks(tasks.map((t) => ({ ...t, source })));
+      track("parse_succeeded", { count: tasks.length });
       router.push("/inbox");
     } catch {
       setError("Щось пішло не так. Спробуй ще раз.");
@@ -48,7 +67,7 @@ export default function CapturePage() {
       <button onClick={() => submit(listening ? "voice" : "text")} disabled={loading}
         className="h-14 rounded-xl text-white text-base font-medium disabled:opacity-50"
         style={{ background: "var(--accent)" }}>
-        {loading ? "AI розбирає…" : "Розкласти на задачі"}
+        {loading ? "Розбираю…" : "Розкласти на задачі"}
       </button>
     </main>
   );

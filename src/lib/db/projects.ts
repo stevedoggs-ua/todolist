@@ -1,15 +1,11 @@
-import { createClient } from "@/lib/supabase/client";
+// Demo mode: localStorage-backed (no auth). Restore from git for the real backend.
 import type { Project } from "@/lib/types";
+import { getProjects } from "./local";
 
 export async function listProjects(): Promise<Project[]> {
-  const sb = createClient();
-  const { data, error } = await sb.from("projects").select("*").order("is_inbox", { ascending: false });
-  if (error) throw error;
-  return data as Project[];
+  return getProjects().sort((a, b) => Number(b.is_inbox) - Number(a.is_inbox));
 }
 
 export async function getInboxProject(): Promise<Project | null> {
-  const sb = createClient();
-  const { data } = await sb.from("projects").select("*").eq("is_inbox", true).maybeSingle();
-  return (data as Project) ?? null;
+  return getProjects().find((p) => p.is_inbox) ?? null;
 }
