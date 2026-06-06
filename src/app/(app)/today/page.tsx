@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { listToday, setDone, updateTask, deleteTask, countFocus, saveOrder, repackTimeline } from "@/lib/db/tasks";
 import { Skeleton } from "@/components/Skeleton";
@@ -7,6 +7,7 @@ import { Toast } from "@/components/Toast";
 import { Timeline } from "@/components/Timeline";
 import { TaskSheet } from "@/components/TaskSheet";
 import { FocusBoard } from "@/components/FocusBoard";
+import { MotivationBanner } from "@/components/MotivationBanner";
 import { IconSparkles, IconPlus, IconClock } from "@/components/icons";
 import { track } from "@/lib/analytics";
 import { todayHeadline, durationLabel, sumDuration } from "@/lib/format";
@@ -21,6 +22,8 @@ export default function TodayPage() {
   const [toast, setToast] = useState("");
   const [editing, setEditing] = useState<Task | null>(null);
   const [view, setView] = useState<"list" | "timeline">("list");
+  const [celebrate, setCelebrate] = useState(false);
+  const celebrateN = useRef(0);
   const load = () => listToday(today).then(setTasks).catch(() => setTasks([]));
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -34,8 +37,8 @@ export default function TodayPage() {
   const toggle = async (t: Task) => {
     const done = !t.is_done;
     setTasks((cur) => cur?.map((x) => (x.id === t.id ? { ...x, is_done: done } : x)) ?? null);
+    if (done) { celebrateN.current += 1; setCelebrate(true); track("task_completed", {}); }
     await setDone(t.id, done);
-    if (done) track("task_completed", {});
   };
 
   const toggleFocus = async (t: Task) => {
@@ -117,6 +120,7 @@ export default function TodayPage() {
           onToggleDone={toggle} onToggleFocus={toggleFocus} onOpen={(t) => setEditing(t)} onCommit={commitBoard} />
       )}
 
+      {celebrate && <MotivationBanner key={celebrateN.current} onClose={() => setCelebrate(false)} />}
       {toast && <Toast message={toast} action="Ок" onAction={() => setToast("")} />}
       {editing && (
         <TaskSheet task={editing} today={today}
