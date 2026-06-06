@@ -4,7 +4,7 @@
     {
       "name": "dev",
       "runtimeExecutable": "/bin/zsh",
-      "runtimeArgs": ["-c", "export PATH=\"$HOME/.local/node-v22.22.3-darwin-arm64/bin:$PATH\"; exec node node_modules/next/dist/bin/next dev --webpack --port 3000"],
+      "runtimeArgs": ["-c", "export PATH=\"$HOME/.local/node-v22.22.3-darwin-arm64/bin:$PATH\"; unset ANTHROPIC_API_KEY ANTHROPIC_BASE_URL; exec node node_modules/next/dist/bin/next dev --webpack --port 3000"],
       "port": 3000
     }
   ]

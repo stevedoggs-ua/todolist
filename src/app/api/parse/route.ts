@@ -56,7 +56,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+    const client = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY!,
+      baseURL: "https://api.anthropic.com", // pin to the official API, ignore any inherited ANTHROPIC_BASE_URL
+    });
     const system = buildSystemPrompt(today, timezone);
 
     const msg = await client.messages.create({
