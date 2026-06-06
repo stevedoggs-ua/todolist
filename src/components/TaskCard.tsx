@@ -1,21 +1,51 @@
 "use client";
+import type { ReactNode } from "react";
 import type { Task } from "@/lib/types";
 import { PriorityDot } from "./PriorityDot";
 import { Chip } from "./Chip";
+import { IconClock, IconCalendar } from "./icons";
+import { relativeDay, durationLabel } from "@/lib/format";
 
-export function TaskCard({ task, actions }:
-  { task: Task; actions?: React.ReactNode }) {
+export function TaskCard({ task, leading, trailing, today, focus }:
+  { task: Task; leading?: ReactNode; trailing?: ReactNode; today?: string; focus?: boolean }) {
+  const done = task.is_done;
+  const overdue = !!(task.due_date && today && task.due_date < today && !done);
+
   return (
-    <div className="flex items-start gap-3 p-3 rounded-xl mb-2" style={{ background: "var(--surface)" }}>
-      <PriorityDot priority={task.priority} />
+    <div
+      className="flex items-center gap-3 rounded-2xl px-3.5 py-3 border"
+      style={{
+        background: focus ? "var(--surface)" : "var(--surface)",
+        borderColor: focus ? "var(--accent)" : "var(--line)",
+        boxShadow: focus ? "var(--shadow-card), inset 0 0 0 1px var(--accent)" : "var(--shadow-card)",
+      }}>
+      {leading}
       <div className="flex-1 min-w-0">
-        <p className="text-base" style={{ color: "var(--text-primary)" }}>{task.title}</p>
-        <div className="flex gap-2 mt-1 flex-wrap">
-          {task.duration_min && <Chip>{task.duration_min} хв</Chip>}
-          {task.due_date && <Chip>{task.due_date}{task.due_time ? ` ${task.due_time}` : ""}</Chip>}
+        <div className="flex items-start gap-2">
+          <span className="mt-[7px]"><PriorityDot priority={task.priority} /></span>
+          <p className="text-[15px] leading-snug line-clamp-2"
+            style={{
+              color: done ? "var(--ink-3)" : "var(--ink)",
+              textDecoration: done ? "line-through" : "none",
+            }}>
+            {task.title}
+          </p>
         </div>
+        {(task.due_date || task.duration_min) && (
+          <div className="flex gap-1.5 mt-1.5 flex-wrap pl-4">
+            {task.due_date && (
+              <Chip icon={<IconCalendar size={12} />} tone={overdue ? "danger" : "default"}>
+                {today ? relativeDay(task.due_date, today) : task.due_date}
+                {task.due_time ? ` · ${task.due_time}` : ""}
+              </Chip>
+            )}
+            {task.duration_min && (
+              <Chip icon={<IconClock size={12} />}>{durationLabel(task.duration_min)}</Chip>
+            )}
+          </div>
+        )}
       </div>
-      {actions}
+      {trailing}
     </div>
   );
 }

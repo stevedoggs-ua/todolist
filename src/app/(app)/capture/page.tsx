@@ -6,6 +6,7 @@ import type { Priority } from "@/lib/types";
 import { track } from "@/lib/analytics";
 import { useSpeech, isSpeechSupported } from "@/lib/voice/useSpeech";
 import { MicButton } from "@/components/MicButton";
+import { IconSparkles } from "@/components/icons";
 
 function todayIso() { return new Date().toISOString().slice(0, 10); }
 
@@ -54,19 +55,40 @@ export default function CapturePage() {
     } finally { setLoading(false); }
   };
 
+  const value = listening && interim ? (text ? text + " " : "") + interim : text;
+
   return (
-    <main className="pt-8 flex flex-col gap-4 min-h-[70vh]">
-      <h1 className="text-2xl font-semibold">Що в голові?</h1>
-      <textarea value={listening && interim ? text + " " + interim : text}
-        onChange={(e) => setText(e.target.value)} disabled={loading}
-        placeholder="напр.: написати Анні, доробити презу, дзвінок о 15…"
-        className="flex-1 min-h-48 rounded-xl border p-4 text-base resize-none"
-        style={{ background: "var(--surface)" }} />
-      {error && <p className="text-sm" style={{ color: "var(--danger)" }}>{error}</p>}
-      <MicButton listening={listening} supported={supported} onStart={start} onStop={stop} />
-      <button onClick={() => submit(listening ? "voice" : "text")} disabled={loading}
-        className="h-14 rounded-xl text-white text-base font-medium disabled:opacity-50"
-        style={{ background: "var(--accent)" }}>
+    <main className="pt-12 flex flex-col min-h-[88vh]">
+      <header className="mb-4">
+        <h1 className="text-[30px] font-semibold tracking-tight leading-none">Що в голові?</h1>
+        <p className="mt-1.5 text-[15px]" style={{ color: "var(--ink-3)" }}>
+          Пиши потоком — AI розкладе на задачі.
+        </p>
+      </header>
+
+      <textarea
+        value={value}
+        onChange={(e) => setText(e.target.value)}
+        disabled={loading}
+        placeholder="напр.: написати Анні, доробити презу, забукати зал, дзвінок о 15…"
+        className="flex-1 min-h-44 rounded-2xl p-4 text-[16px] leading-relaxed resize-none outline-none border-2 transition-colors focus:border-[var(--accent)]"
+        style={{ background: "var(--surface)", borderColor: "var(--line)", color: "var(--ink)", boxShadow: "var(--shadow-card)" }} />
+
+      {error && <p className="text-sm mt-2" style={{ color: "var(--danger)" }}>{error}</p>}
+
+      {supported && (
+        <div className="flex flex-col items-center gap-2 my-5">
+          <MicButton listening={listening} supported={supported} onStart={start} onStop={stop} />
+          <span className="text-[13px]" style={{ color: "var(--ink-3)" }}>
+            {listening ? "Слухаю… говори" : "або продиктуй голосом"}
+          </span>
+        </div>
+      )}
+
+      <button onClick={() => submit(listening ? "voice" : "text")} disabled={loading || text.trim().length < 3}
+        className="mt-auto h-14 rounded-2xl text-white text-[16px] font-semibold flex items-center justify-center gap-2 press transition-opacity disabled:opacity-40"
+        style={{ background: "var(--accent)", boxShadow: text.trim().length >= 3 ? "var(--shadow-fab)" : "none" }}>
+        <IconSparkles size={20} />
         {loading ? "Розбираю…" : "Розкласти на задачі"}
       </button>
     </main>

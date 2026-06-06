@@ -64,3 +64,12 @@ export async function setDone(id: string, done: boolean): Promise<void> {
 export async function countFocus(focusDate: string): Promise<number> {
   return getTasks().filter((t) => t.is_focus && t.focus_date === focusDate).length;
 }
+
+export async function openCountByProject(): Promise<Record<string, number>> {
+  const counts: Record<string, number> = {};
+  for (const t of getTasks()) {
+    if (t.is_done || !t.project_id) continue;
+    counts[t.project_id] = (counts[t.project_id] ?? 0) + 1;
+  }
+  return counts;
+}

@@ -1,11 +1,12 @@
 "use client";
 import { useState } from "react";
 import { track } from "@/lib/analytics";
+import { IconMic, IconSparkles, IconStarFilled, IconArrowRight } from "./icons";
 
 const SLIDES = [
-  { t: "Вивали все з голови", s: "Голосом або текстом — все, що крутиться в думках." },
-  { t: "AI розкладе по полицях", s: "Пріоритет, оцінка часу і дата — автоматично." },
-  { t: "Фокусуйся на головному", s: "Триаж в Inbox → обери 1–3 задачі дня у Focus." },
+  { Icon: IconMic, t: "Вивали все з голови", s: "Голосом або текстом — усе, що крутиться в думках. Без форм і полів." },
+  { Icon: IconSparkles, t: "AI розкладе по полицях", s: "Пріоритет, оцінка часу й дата — застосунок зробить це за секунди." },
+  { Icon: IconStarFilled, t: "Фокусуйся на головному", s: "Обери 1–3 задачі дня — і роби те, що справді важливо." },
 ];
 
 export function Onboarding({ onDone }: { onDone: () => void }) {
@@ -15,22 +16,42 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     onDone();
   };
   const last = i === SLIDES.length - 1;
+  const Slide = SLIDES[i];
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-between p-6" style={{ background: "var(--bg)" }}>
-      <button onClick={() => finish(true)} className="self-end text-sm" style={{ color: "var(--text-secondary)" }}>Пропустити</button>
-      <div className="flex-1 flex flex-col justify-center gap-3">
-        <div className="flex gap-1.5 mb-2">
+    <div className="fixed inset-0 z-50 flex flex-col p-6 pt-[max(env(safe-area-inset-top),24px)]"
+      style={{ background: "var(--bg)" }}>
+      {/* progress + skip */}
+      <div className="flex items-center gap-3">
+        <div className="flex gap-1.5 flex-1">
           {SLIDES.map((_, idx) => (
-            <span key={idx} className="h-1 flex-1 rounded-full transition-colors"
+            <span key={idx} className="h-1 flex-1 rounded-full transition-colors duration-300"
               style={{ background: idx <= i ? "var(--accent)" : "var(--surface-2)" }} />
           ))}
         </div>
-        <h1 className="text-3xl font-semibold">{SLIDES[i].t}</h1>
-        <p className="text-base" style={{ color: "var(--text-secondary)" }}>{SLIDES[i].s}</p>
+        {!last && (
+          <button onClick={() => finish(true)} className="text-[14px] font-medium press"
+            style={{ color: "var(--ink-3)" }}>Пропустити</button>
+        )}
       </div>
+
+      {/* content (re-animates on change) */}
+      <div key={i} className="scale-in flex-1 flex flex-col justify-center gap-6">
+        <div className="w-20 h-20 rounded-3xl flex items-center justify-center"
+          style={{ background: "var(--accent-weak)", color: "var(--accent)" }}>
+          <Slide.Icon size={40} />
+        </div>
+        <div className="flex flex-col gap-3">
+          <h1 className="text-[32px] leading-[1.1] font-semibold tracking-tight">{Slide.t}</h1>
+          <p className="text-[17px] leading-relaxed" style={{ color: "var(--ink-2)" }}>{Slide.s}</p>
+        </div>
+      </div>
+
       <button onClick={() => (last ? finish(false) : setI(i + 1))}
-        className="h-14 rounded-xl text-white text-base font-medium" style={{ background: "var(--accent)" }}>
+        className="h-14 rounded-2xl text-white text-[16px] font-semibold flex items-center justify-center gap-2 press"
+        style={{ background: "var(--accent)", boxShadow: "var(--shadow-fab)" }}>
         {last ? "Почати" : "Далі"}
+        <IconArrowRight size={20} />
       </button>
     </div>
   );

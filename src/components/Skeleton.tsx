@@ -1,3 +1,3 @@
-export function Skeleton() {
-  return <div className="h-16 rounded-xl mb-2 animate-pulse" style={{ background: "var(--surface-2)" }} />;
+export function Skeleton({ className = "h-[68px]" }: { className?: string }) {
+  return <div className={`shimmer rounded-2xl mb-2.5 ${className}`} />;
 }

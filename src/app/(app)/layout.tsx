@@ -15,9 +15,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     setShowOnboarding(false);
   };
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen">
       {showOnboarding && <Onboarding onDone={dismiss} />}
-      <div className="max-w-md mx-auto px-4">{children}</div>
+      <div className="max-w-md mx-auto px-5 pb-32">{children}</div>
       <BottomNav />
     </div>
   );
