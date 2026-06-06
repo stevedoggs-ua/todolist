@@ -127,12 +127,22 @@ button { -webkit-tap-highlight-color: transparent; }
   from { transform: translateY(100%); }
   to   { transform: translateY(0); }
 }
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
 
 .rise { animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .pop { animation: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 .fade-in { animation: fade-in 0.3s ease both; }
 .scale-in { animation: scale-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .slide-up { animation: slide-up 0.34s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.slide-in { animation: slide-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.float { animation: float 3s ease-in-out infinite; }
 
 .shimmer {
   background: linear-gradient(
